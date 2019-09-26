@@ -235,32 +235,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 	return 0;
 }
 
-void MoveLeft() {
-	if (xPosition >= MOVE_LENGTH)
-		xPosition -= MOVE_LENGTH * A_PARAM;
-}
-
-void MoveRight() {
-	if (xPosition + imageWidth < windowWidth + 2 * MOVE_LENGTH)
-		xPosition += MOVE_LENGTH * A_PARAM;
-}
-
-void MoveUp() {
-	if (yPosition >= MOVE_LENGTH)
-		yPosition -= MOVE_LENGTH * A_PARAM;
-}
-
-void MoveDown() {
-	if (yPosition + imageHight < windowHight + 2 * MOVE_LENGTH)
-		yPosition += MOVE_LENGTH * A_PARAM;
-}
-
 INT GetCurrentWidth() {
 	return (imageWidth + (currentScaling - 1) * 250);
 }
 
 INT GetCurrentHight() {
 	return (imageHight + (currentScaling - 1) * 250);
+}
+
+void MoveLeft() {
+	if (xPosition >= MOVE_LENGTH)
+		xPosition -= MOVE_LENGTH;
+}
+
+void MoveRight() {
+	INT tempWidth = GetCurrentWidth();
+	if (xPosition + tempWidth < windowWidth + 2 * MOVE_LENGTH)
+		xPosition += MOVE_LENGTH;
+}
+
+void MoveUp() {
+	if (yPosition >= MOVE_LENGTH)
+		yPosition -= MOVE_LENGTH;
+}
+
+void MoveDown() {
+	INT tempHight = GetCurrentHight();
+	if (yPosition + tempHight < windowHight + 2 * MOVE_LENGTH)
+		yPosition += MOVE_LENGTH;
 }
 
 void ZoomPlus() {
