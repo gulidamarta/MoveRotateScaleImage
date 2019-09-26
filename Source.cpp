@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <gdiplus.h>
 #include <shellapi.h>
+#include <math.h>
 
 #pragma comment (lib,"Gdiplus.lib")
 
@@ -34,10 +35,10 @@ BOOL isRotating = false;
 Gdiplus::REAL currentScaling = 1.0f;
 Gdiplus::REAL currentAngel = 0;
 
-// hInstance - äåñêðèïòîð ýêçåìïëÿðà ïðèëîæåíèÿ. Ýòîò äåñêðèïòîð ñîäåðæèò àäðåñ íà÷àëà êîäà ïðîãðàììû â åå àäðåñíîì ïðîñòðàíñòâå.
-// hPrevInstance - äåñêðèïòîð ïðåäûäóùåãî ýêçåìïëÿðà ïðèëîæåíèÿ, ïî÷òè âñåãäà ðàâåí NULL
-// lpCmdLine - óêàçàòåëü íà íà÷àëî êîìàíäíîé ñòðîêè, ââåäåííîé ïðè çàïóñêå ïðîãðàììû
-// nCmdShow - ýòî çíà÷åíèå ñîäåðæèò æåëàåìûé âèä îêíà (íàïðèìåð, ñâåðíóòûé èëè ðàçâåðíóòûé)
+// hInstance - Ð´ÐµÑÐºÑ€Ð¸Ð¿Ñ‚Ð¾Ñ€ ÑÐºÐ·ÐµÐ¼Ð¿Ð»ÑÑ€Ð° Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ. Ð­Ñ‚Ð¾Ñ‚ Ð´ÐµÑÐºÑ€Ð¸Ð¿Ñ‚Ð¾Ñ€ ÑÐ¾Ð´ÐµÑ€Ð¶Ð¸Ñ‚ Ð°Ð´Ñ€ÐµÑ Ð½Ð°Ñ‡Ð°Ð»Ð° ÐºÐ¾Ð´Ð° Ð¿Ñ€Ð¾Ð³Ñ€Ð°Ð¼Ð¼Ñ‹ Ð² ÐµÐµ Ð°Ð´Ñ€ÐµÑÐ½Ð¾Ð¼ Ð¿Ñ€Ð¾ÑÑ‚Ñ€Ð°Ð½ÑÑ‚Ð²Ðµ.
+// hPrevInstance - Ð´ÐµÑÐºÑ€Ð¸Ð¿Ñ‚Ð¾Ñ€ Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰ÐµÐ³Ð¾ ÑÐºÐ·ÐµÐ¼Ð¿Ð»ÑÑ€Ð° Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ, Ð¿Ð¾Ñ‡Ñ‚Ð¸ Ð²ÑÐµÐ³Ð´Ð° Ñ€Ð°Ð²ÐµÐ½ NULL
+// lpCmdLine - ÑƒÐºÐ°Ð·Ð°Ñ‚ÐµÐ»ÑŒ Ð½Ð° Ð½Ð°Ñ‡Ð°Ð»Ð¾ ÐºÐ¾Ð¼Ð°Ð½Ð´Ð½Ð¾Ð¹ ÑÑ‚Ñ€Ð¾ÐºÐ¸, Ð²Ð²ÐµÐ´ÐµÐ½Ð½Ð¾Ð¹ Ð¿Ñ€Ð¸ Ð·Ð°Ð¿ÑƒÑÐºÐµ Ð¿Ñ€Ð¾Ð³Ñ€Ð°Ð¼Ð¼Ñ‹
+// nCmdShow - ÑÑ‚Ð¾ Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ ÑÐ¾Ð´ÐµÑ€Ð¶Ð¸Ñ‚ Ð¶ÐµÐ»Ð°ÐµÐ¼Ñ‹Ð¹ Ð²Ð¸Ð´ Ð¾ÐºÐ½Ð° (Ð½Ð°Ð¿Ñ€Ð¸Ð¼ÐµÑ€, ÑÐ²ÐµÑ€Ð½ÑƒÑ‚Ñ‹Ð¹ Ð¸Ð»Ð¸ Ñ€Ð°Ð·Ð²ÐµÑ€Ð½ÑƒÑ‚Ñ‹Ð¹)
 int APIENTRY WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
@@ -52,10 +53,10 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	MSG msg;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
-	// ïðè èçìåíåíèè ðàçìåðîâ îêíà, ôóíêöèÿ îêíà ìîæåò ïîëó÷èòü ñîîáùåíèå WM_PAINT 
-	// â ýòîì ñëó÷àå ôóíêöèÿ îêíà äîëæíà ïåðåðèðîñîâàòü âñå îêíî èëè åãî ÷àñòü
-	// CS_DBLCLKS - îòñëåæèâàíèå äâîéíûõ ùåë÷êîâ ìûøè, â ôóíêöèþ îêíà 
-	// ïîñûëàþòñÿ ñîîáùåíèÿ WM_LBUTTONDBLCLK è WM_RBUTTONDBLCLK
+	// Ð¿Ñ€Ð¸ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ð¸ Ñ€Ð°Ð·Ð¼ÐµÑ€Ð¾Ð² Ð¾ÐºÐ½Ð°, Ñ„ÑƒÐ½ÐºÑ†Ð¸Ñ Ð¾ÐºÐ½Ð° Ð¼Ð¾Ð¶ÐµÑ‚ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ ÑÐ¾Ð¾Ð±Ñ‰ÐµÐ½Ð¸Ðµ WM_PAINT 
+	// Ð² ÑÑ‚Ð¾Ð¼ ÑÐ»ÑƒÑ‡Ð°Ðµ Ñ„ÑƒÐ½ÐºÑ†Ð¸Ñ Ð¾ÐºÐ½Ð° Ð´Ð¾Ð»Ð¶Ð½Ð° Ð¿ÐµÑ€ÐµÑ€Ð¸Ñ€Ð¾ÑÐ¾Ð²Ð°Ñ‚ÑŒ Ð²ÑÐµ Ð¾ÐºÐ½Ð¾ Ð¸Ð»Ð¸ ÐµÐ³Ð¾ Ñ‡Ð°ÑÑ‚ÑŒ
+	// CS_DBLCLKS - Ð¾Ñ‚ÑÐ»ÐµÐ¶Ð¸Ð²Ð°Ð½Ð¸Ðµ Ð´Ð²Ð¾Ð¹Ð½Ñ‹Ñ… Ñ‰ÐµÐ»Ñ‡ÐºÐ¾Ð² Ð¼Ñ‹ÑˆÐ¸, Ð² Ñ„ÑƒÐ½ÐºÑ†Ð¸ÑŽ Ð¾ÐºÐ½Ð° 
+	// Ð¿Ð¾ÑÑ‹Ð»Ð°ÑŽÑ‚ÑÑ ÑÐ¾Ð¾Ð±Ñ‰ÐµÐ½Ð¸Ñ WM_LBUTTONDBLCLK Ð¸ WM_RBUTTONDBLCLK
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
 	wcex.lpfnWndProc = WndProc;
 	wcex.cbClsExtra = 0;
@@ -130,13 +131,17 @@ void DrawImage(HDC hdc, HWND hWnd)
 	FillRect(hdcMem, &rcClient, (HBRUSH)(COLOR_WINDOW + 1));
 
 	if (isScaling && (!isPositiveScaling)) {
+		graphics.TranslateTransform(xPosition, yPosition);
 		graphics.ScaleTransform(currentScaling, currentScaling);
-		isScaling = false;
+		graphics.TranslateTransform(-xPosition, -yPosition);
+		//isScaling = false;
 	}
 
 	if (isScaling && isPositiveScaling) {
+		graphics.TranslateTransform(xPosition, yPosition);
 		graphics.ScaleTransform(currentScaling, currentScaling);
-		isScaling = false;
+		graphics.TranslateTransform(-xPosition, -yPosition);
+		//isScaling = false;
 	}
 
 	if (isRotating && (!isPositiveRotating)) {
@@ -207,6 +212,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 		MoveImageOnMousewheel(wParam);
 		InvalidateRect(hWnd, NULL, TRUE);
 		break;
+	case WM_GETMINMAXINFO:
+		MINMAXINFO FAR *lpMinMaxInfo;
+		// set the MINMAXINFO structure pointer 
+		lpMinMaxInfo = (MINMAXINFO FAR *) lParam;
+		lpMinMaxInfo->ptMinTrackSize.x = 250;
+		lpMinMaxInfo->ptMinTrackSize.y = 340;
+		break;
+		break;
 	case WM_DROPFILES:
 		//DragFinish(wParam);
 		ProcessDraggedFiles(hWnd, wParam);
@@ -242,28 +255,62 @@ void MoveDown() {
 		yPosition += MOVE_LENGTH * A_PARAM;
 }
 
+INT GetCurrentWidth() {
+	return (imageWidth + (currentScaling - 1) * 250);
+}
+
+INT GetCurrentHight() {
+	return (imageHight + (currentScaling - 1) * 250);
+}
+
 void ZoomPlus() {
-	currentScaling += SCALING_STEP;
+	if (((GetCurrentWidth() + xPosition) < windowWidth) &&
+		((GetCurrentHight() + yPosition) < windowHight)) {
+		currentScaling += SCALING_STEP;
+	}
 	isPositiveScaling = true;
 	isScaling = true;
 }
 
 void ZoomMinus() {
-	currentScaling -= SCALING_STEP;
+	if (currentScaling > 2 * SCALING_STEP) {
+		currentScaling -= SCALING_STEP;
+	}
 	isPositiveScaling = false;
 	isScaling = true;
 }
 
+
+bool CanBeRotated() {
+	INT tempWidth = GetCurrentWidth();
+	INT tempHight = GetCurrentHight();
+	float diameter = sqrt((tempHight*tempHight) +
+		(tempWidth * tempWidth));
+	float radius = diameter / 2;
+	float centerX = xPosition + tempWidth / 2;
+	float centerY = yPosition + tempHight / 2;
+	if ((centerX >= radius) &&
+		(centerY >= radius) &&
+		(centerX <= (windowWidth - radius)) &&
+		(centerY <= (windowHight - radius)))
+		return true;
+	return false;
+}
+
 void RotatePositive() {
-	currentAngel += ROTATE_STEP;
-	isRotating = true;
-	isPositiveRotating = true;
+	if (CanBeRotated()) {
+		currentAngel += ROTATE_STEP;
+		isRotating = true;
+		isPositiveRotating = true;
+	}
 }
 
 void RotateNegative() {
-	currentAngel -= ROTATE_STEP;
-	isRotating = true;
-	isPositiveRotating = false;
+	if (CanBeRotated()) {
+		currentAngel -= ROTATE_STEP;
+		isRotating = true;
+		isPositiveRotating = false;
+	}
 }
 
 void MoveImageOnArrowKeys(WPARAM wParam, HDC hdc) {
